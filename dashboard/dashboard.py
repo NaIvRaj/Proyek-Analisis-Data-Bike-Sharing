@@ -6,7 +6,6 @@ import pandas as pd
 import seaborn as sns
 import streamlit as st
 
-# ---------------------------------------------------------------- konfigurasi
 st.set_page_config(page_title="Bike Sharing Dashboard", page_icon="🚲", layout="wide")
 sns.set_theme(style="white")
 plt.rcParams.update({"axes.spines.top": False, "axes.spines.right": False, "axes.titleweight": "bold"})
@@ -15,6 +14,8 @@ BLUE, LIGHT, ORANGE, GREY = "#1f5aa6", "#a9bfdc", "#e08a1e", "#b5b5b5"
 BASE = Path(__file__).parent
 SEASONS = ["Winter", "Spring", "Summer", "Fall"]
 WEATHERS = ["Cerah/Berawan Sebagian", "Berkabut/Mendung", "Hujan/Salju Ringan", "Hujan Lebat/Salju"]
+Q1 = "Pada jam berapa puncak penyewaan sepeda terjadi pada hari kerja dibandingkan akhir pekan/hari libur selama periode 2011–2012, dan berapa rata-rata penyewaan per jam pada jam puncak tersebut, sehingga operator dapat menentukan jadwal redistribusi sepeda dan jendela perawatan armada?"
+Q2 = "Seberapa besar perbedaan rata-rata penyewaan harian antar musim dan antar kondisi cuaca (cerah, berkabut/mendung, hujan/salju ringan) selama periode 2011–2012, dan berapa persen penurunan permintaan pada kondisi cuaca terburuk dibandingkan cuaca cerah, sehingga tim bisnis dapat menyusun strategi promosi dan penyesuaian armada musiman?"
 WEEKDAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
 
 
@@ -27,7 +28,6 @@ def load_data():
 
 day_all, hour_all = load_data()
 
-# ---------------------------------------------------------------- sidebar
 with st.sidebar:
     st.title("🚲 Bike Sharing")
     st.caption("Capital Bikeshare, Washington D.C. (2011-2012)")
@@ -50,7 +50,6 @@ def apply_filter(df):
 
 day, hour = apply_filter(day_all), apply_filter(hour_all)
 
-# ---------------------------------------------------------------- header & KPI
 st.title("Dashboard Analisis Bike Sharing 🚲")
 st.write("Menjawab dua pertanyaan bisnis: **(1)** jam puncak penyewaan hari kerja vs akhir pekan/libur, dan "
          "**(2)** pengaruh musim dan cuaca terhadap penyewaan harian.")
@@ -67,9 +66,9 @@ c4.metric("Jumlah hari dianalisis", f"{len(day):,}")
 
 tab1, tab2, tab3 = st.tabs(["⏰ Pola Jam (Pertanyaan 1)", "🌦️ Musim & Cuaca (Pertanyaan 2)", "🧩 Analisis Lanjutan"])
 
-# ---------------------------------------------------------------- tab 1
 with tab1:
-    st.subheader("Pada jam berapa puncak penyewaan terjadi?")
+    st.subheader("Pertanyaan 1")
+    st.write(Q1)
     hourly = hour.groupby(["hr", "day_type"])["cnt"].mean().reset_index()
     palette = {"Hari Kerja": BLUE, "Akhir Pekan/Libur": ORANGE}
 
@@ -99,9 +98,9 @@ with tab1:
             "puncak siang (13.00). Dini hari (00.00-05.00) paling sepi, cocok untuk perawatan armada. "
             "(Insight di atas berdasarkan seluruh data; metrik berubah mengikuti filter.)")
 
-# ---------------------------------------------------------------- tab 2
 with tab2:
-    st.subheader("Seberapa besar pengaruh musim dan cuaca?")
+    st.subheader("Pertanyaan 2")
+    st.write(Q2)
     season_avg = day.groupby("season_name")["cnt"].mean().reindex(SEASONS).dropna()
     weather_avg = day.groupby("weather_label")["cnt"].mean().reindex(WEATHERS).dropna()
     weather_n = day["weather_label"].value_counts().reindex(weather_avg.index)
@@ -136,7 +135,6 @@ with tab2:
             "Cuaca berkabut/mendung menurunkan permintaan sekitar 17%, hujan/salju ringan sekitar 63% dibanding cuaca cerah "
             "(sampel hujan/salju hanya 21 hari pada keseluruhan data).")
 
-# ---------------------------------------------------------------- tab 3
 with tab3:
     st.subheader("Binning suhu, klaster jam, dan heatmap")
     day = day.copy()
